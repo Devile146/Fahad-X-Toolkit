@@ -11,10 +11,33 @@ body{
   height:100vh;
   background: radial-gradient(circle at top,#1a2a3a,#0b1118);
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
   color:#fff;
 }
+
+/* TOP BUBBLE NAME BUTTON */
+.top-bubble{
+  margin-bottom:25px;
+  padding:14px 30px;
+  border-radius:50px;
+  font-weight:700;
+  font-size:16px;
+  color:#fff;
+  background: linear-gradient(135deg,#ff8c00,#ff00ff);
+  box-shadow:0 0 14px rgba(255,0,255,0.6), inset 0 0 8px rgba(255,255,255,0.25);
+  animation: bubble 2.5s infinite;
+  cursor:default;
+  user-select:none;
+}
+@keyframes bubble{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.04);}
+  100%{transform:scale(1);}
+}
+
+/* LOGIN BOX */
 .login-box{
   background: rgba(0,0,0,0.7);
   padding:45px 40px;
@@ -31,10 +54,7 @@ body{
 .input-group input{
   width:100%;
   padding:12px 44px 12px 12px;
-  border:none;
-  border-radius:7px;
-  outline:none;
-  font-size:15px;
+  border:none;border-radius:7px;outline:none;font-size:15px;
 }
 .eye-btn{
   position:absolute;
@@ -42,11 +62,9 @@ body{
   top:50%;
   transform:translateY(-50%);
   cursor:pointer;
-  width:22px;
-  height:22px;
-  fill:#666;
+  width:22px;fill:#666;
 }
-.login-box button{
+button{
   width:100%;
   padding:12px;
   border:none;
@@ -55,75 +73,121 @@ body{
   color:#000;
   font-size:16px;
   cursor:pointer;
-  transition:0.3s;
 }
-.login-box button:hover{background:#00bdbd;}
+button:hover{background:#00bdbd;}
+button:disabled{opacity:.5;cursor:not-allowed;}
+
 #error{display:block;margin-top:18px;font-size:14px;}
+.success{color:#3FEF00;font-weight:600;} /* Parrot Green Success */
+
+/* Bubble Button */
+.bubble-btn{
+  margin-top:18px;
+  padding:13px;
+  border-radius:50px;
+  font-weight:600;
+  color:#fff;
+  background: linear-gradient(135deg,#00f2ff,#7a00ff);
+  box-shadow:0 0 12px rgba(0,255,255,0.6),
+             inset 0 0 8px rgba(255,255,255,0.25);
+  animation:bubble 2.5s infinite;
+}
 .footer-text{margin-top:25px;font-size:12px;opacity:0.5;}
 </style>
 </head>
 
 <body>
 
+<!-- TOP NAME BUBBLE -->
+<div class="top-bubble">TECHNICAL_FAHAD</div>
+
 <div class="login-box">
   <h1>Secure Access</h1>
   <p>Authorized users only</p>
 
   <div class="input-group">
-    <input type="text" id="usernameInput" placeholder="Username">
+    <input id="usernameInput" placeholder="Username">
   </div>
 
   <div class="input-group">
     <input type="password" id="passwordInput" placeholder="Password">
     <svg class="eye-btn" viewBox="0 0 24 24" onclick="togglePassword()">
       <path d="M12 5c-7 0-11 7-11 7s4 7 11 7 11-7 11-7-4-7-11-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/>
-      <line id="slash" x1="3" y1="3" x2="21" y2="21" stroke="#666" stroke-width="2"/>
     </svg>
   </div>
 
-  <button onclick="checkLogin()">Login</button>
+  <button id="loginBtn" onclick="checkLogin()">Login</button>
+  <button class="bubble-btn" onclick="openWhatsApp()">GET PASSWORD</button>
+
   <span id="error"></span>
 
-  <div class="footer-text">
-    Educational Toolkit • Protected Access
-  </div>
+  <div class="footer-text">Educational Toolkit • Protected Access</div>
 </div>
 
 <script>
-let visible = false;
+let visible=false;
+let attempts=0;
+let locked=false;
+let timer=null;
+let countdown=30;
+
 function togglePassword(){
-  const input = document.getElementById("passwordInput");
-  const slash = document.getElementById("slash");
-  visible = !visible;
-  input.type = visible ? "text" : "password";
-  slash.style.display = visible ? "none" : "block";
+  const i=document.getElementById("passwordInput");
+  visible=!visible; i.type=visible?"text":"password";
+}
+
+function openWhatsApp(){
+  window.open(
+    "https://wa.me/923251138959?text=HELLO%20SIRE%20PLEASE%20GIVE%20ME%20USERNAME%20AND%20PASSOWRD%20%F0%9F%92%9E",
+    "_blank"
+  );
+}
+
+function lockSystem(){
+  locked=true;
+  document.getElementById("loginBtn").disabled=true;
+  const err=document.getElementById("error");
+  err.style.color="#ffcc00";
+  countdown=30;
+
+  timer=setInterval(()=>{
+    countdown--;
+    err.textContent=`🔒 Too many attempts! Try again in ${countdown}s`;
+    if(countdown<=0){
+      clearInterval(timer);
+      locked=false; attempts=0;
+      document.getElementById("loginBtn").disabled=false;
+      err.textContent="";
+    }
+  },1000);
 }
 
 function checkLogin(){
-  const username = document.getElementById("usernameInput").value;
-  const password = document.getElementById("passwordInput").value;
-  const error = document.getElementById("error");
+  if(locked) return;
 
-  if(username === "Fahad" && password === "sindh110"){
-    //  correct, go to toolkit
-    window.location.href = "toolkit.html";
-  } else{
-    error.style.color = "#ff4d4d";
-    error.textContent = " Invalid Username or Password!";
+  const u=usernameInput.value.trim();
+  const p=passwordInput.value;
+  const err=document.getElementById("error");
+
+  if(u==="Fahad" && p==="sindhiontop"){
+    err.className="success";
+    err.textContent="✔ Password Successful";
+    setTimeout(()=>{ window.location.href="toolkit.html"; },2000);
+  }else{
+    attempts++;
+    err.className="";
+    err.style.color="#ff4d4d";
+    err.textContent=`❌ Invalid details! Attempts left: ${3-attempts}`;
+    if(attempts>=3){ lockSystem(); }
   }
 }
 
-// Enter key support
-document.getElementById("passwordInput").addEventListener("keypress", function(e){
-  if(e.key === "Enter"){ checkLogin(); }
-});
-document.getElementById("usernameInput").addEventListener("keypress", function(e){
-  if(e.key === "Enter"){ checkLogin(); }
+["usernameInput","passwordInput"].forEach(id=>{
+  document.getElementById(id).addEventListener("keypress",e=>{
+    if(e.key==="Enter") checkLogin();
+  });
 });
 </script>
 
 </body>
-
 </html>
-
-
